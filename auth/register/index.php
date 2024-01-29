@@ -1,7 +1,7 @@
 <?php
 
-require_once('../../baglanti.php');
-require_once "../../methods/functions.php";
+require_once('../../config/baglanti.php');
+require_once "../../includes/functions.php";
 
 header("Content-Type: application/json; charset=utf-8");
 $pdo->beginTransaction();

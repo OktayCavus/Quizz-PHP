@@ -1,6 +1,6 @@
 <?php
-require_once "../../methods/functions.php";
-require_once "../../baglanti.php";
+require_once "../../includes/functions.php";
+require_once "../../config/baglanti.php";
 
 
 header("Content-Type: application/json; charset=utf-8");
@@ -19,6 +19,8 @@ try {
 
             if ($checkAuth->rowCount() > 0) {
                 session_start();
+                session_regenerate_id(true);
+
                 $_SESSION["username"] = $_POST["username"];
                 unset($_POST["password"]);
                 response($_POST, 200, "Kullanıcı Girişi Başarılı", null, true);
@@ -32,6 +34,6 @@ try {
     }
 } catch (Exception $e) {
     $pdo->rollBack();
-    error_log("Exception: " . $e->getMessage());
+    echo ("Exception: " . $e->getMessage());
     response(null, 500, null, "Sunucu Hatası", false);
 }
