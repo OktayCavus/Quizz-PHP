@@ -1,1 +1,37 @@
 <?php
+require_once "../../methods/functions.php";
+require_once "../../baglanti.php";
+
+
+header("Content-Type: application/json; charset=utf-8");
+
+$pdo->beginTransaction();
+
+try {
+    if ($_POST) {
+        $username = safeOrNotControl($_POST, "username");
+        $password = safeOrNotControl($_POST, "password");
+
+        if ($username && $password) {
+            $password = sha1(md5($password));
+            $checkAuth = $pdo->prepare("Select * from students Where username = ? && password = ?");
+            $checkAuth->execute([$username, $password]);
+
+            if ($checkAuth->rowCount() > 0) {
+                session_start();
+                $_SESSION["username"] = $_POST["username"];
+                unset($_POST["password"]);
+                response($_POST, 200, "Kullanıcı Girişi Başarılı", null, true);
+            } else {
+                response(null, 400, null, "Kullanıcı Adı veya Şifre Hatalı.!", false);
+            }
+        } else {
+            response(null, 400, null, "Kullanıcı Adı ve Şifre boş bırakılamaz.!", false);
+        }
+        $pdo->commit();
+    }
+} catch (Exception $e) {
+    $pdo->rollBack();
+    error_log("Exception: " . $e->getMessage());
+    response(null, 500, null, "Sunucu Hatası", false);
+}

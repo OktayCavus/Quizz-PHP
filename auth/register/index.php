@@ -1,45 +1,12 @@
 <?php
 
 require_once('../../baglanti.php');
+require_once "../../methods/functions.php";
 
 header("Content-Type: application/json; charset=utf-8");
+$pdo->beginTransaction();
 
-function response($content, $code, $mesaj)
-{
-    $islem["content"] = $content;
-    $islem["code"] = $code;
 
-    if ($code == 200) {
-        $islem["success"] = true;
-    } else {
-        $islem["success"] = false;
-
-        switch ($code) {
-            case 400:
-                $islem["error"] = "Geçersiz istek. Lütfen tüm zorunlu alanları doldurun.";
-                break;
-            case 401:
-                $islem["error"] = "Kullanıcı adı ve şifre zorunlu alanlardır.";
-                break;
-            case 402:
-                $islem["error"] = "Şifre en az 6 karakter olmalıdır.";
-                break;
-            case 403:
-                $islem["error"] = "Geçersiz e-posta adresi.";
-                break;
-            default:
-                $islem["error"] = "Bilinmeyen bir hata oluştu.";
-        }
-    }
-
-    $sonuc = json_encode($islem, JSON_UNESCAPED_UNICODE);
-    echo $sonuc;
-}
-
-function safeOrNotControl($method, $key)
-{
-    return isset($method[$key]) && !is_null($method[$key]) ? trim(htmlspecialchars($method[$key])) : null;
-}
 
 if ($_POST) {
     $islem = array();
@@ -53,28 +20,41 @@ if ($_POST) {
     if ($username && $password && $firstname && $lastname && $email) {
         if (strlen($password) >= 6) {
             if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                response(NULL, 403, "Geçersiz e-posta adresi.");
+                response(NULL, 403, NULL, "Geçersiz e-posta error", false);
             } else {
-                try {
-                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                    $password = sha1(md5($password));
-                    $sorgu = $pdo->prepare("INSERT INTO students (username, password, first_name, last_name, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)");
-                    $sorgu->execute([$username, $password, $firstname, $lastname, $email, $phonenumber]);
-
-                    if ($sorgu->rowCount() > 0) {
-                        unset($_POST['password']);
-                        response($_POST, 200, "Kayıt eklendi");
+                $checkUsername = $pdo->prepare("Select * From students Where username = ? ");
+                $checkUsername->execute([$username]);
+                if ($checkUsername->rowCount() > 0) {
+                    response(null, 400, null, "Kullanıcı adı kullanılıyor.", false);
+                } else {
+                    $checkEmail = $pdo->prepare("Select * From students Where email = ?");
+                    $checkEmail->execute([$email]);
+                    if ($checkEmail->rowCount() > 0) {
+                        response(null, 400, null, "Bu E-posta adresi kullanılıyor.", false);
                     } else {
-                        response(NULL, 201, "Kayıt Eklenemedi");
+                        try {
+                            $password = sha1(md5($password));
+                            $sorgu = $pdo->prepare("INSERT INTO students (username, password, first_name, last_name, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)");
+                            $sorgu->execute([$username, $password, $firstname, $lastname, $email, $phonenumber]);
+
+                            if ($sorgu->rowCount() > 0) {
+                                unset($_POST['password']);
+                                response($_POST, 200, "Kayıt eklendi", NULL, true);
+                            } else {
+                                response(NULL, 201, NULL, "Kayıt Eklenemedi", false);
+                            }
+                        } catch (PDOException $e) {
+                            response(null, 500, null, "Sunucu Hatası", false);
+                            echo 'Veri eklenirken hata oluştu: ' . $e->getMessage();
+                        }
                     }
-                } catch (PDOException $e) {
-                    echo 'Veri eklenirken hata oluştu: ' . $e->getMessage();
                 }
             }
         } else {
-            response(NULL, 402, "Şifre en az 6 karakter olmalıdır.");
+            response(NULL, 402, NULL, "Şifre en az 6 karakter olmalıdır.", false);
         }
     } else {
-        response(NULL, 400, "Zorunlu alanları doldurun: username, password, firstname, lastname");
+        response(NULL, 400, NULL, "Zorunlu alanları doldurun: username, password, firstname, lastname", false);
     }
+    $pdo->commit();
 }
