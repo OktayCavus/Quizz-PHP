@@ -1,9 +1,15 @@
 <?php
-$host = "127.0.0.1";
-$dbname = "ilk_proje";
-$charset = 'utf8';
-$username = "root";
-$password = "";
+
+require_once '../vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$host = $_ENV["HOST"];
+$dbname = $_ENV["DB_NAME"];
+$charset = $_ENV["CHARSET"];
+$username = $_ENV["USERNAME"];
+$password = $_ENV["PASSWORD"];
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=$charset", $username, $password);

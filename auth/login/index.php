@@ -21,9 +21,9 @@ try {
                 session_start();
                 session_regenerate_id(true);
 
-                $_SESSION["username"] = $_POST["username"];
-                unset($_POST["password"]);
-                response($_POST, 200, "Kullanıcı Girişi Başarılı", null, true);
+                $_SESSION["username"] = $username;
+                // unset($_POST["password"]);
+                response($username, 200, "Kullanıcı Girişi Başarılı", null, true);
             } else {
                 response(null, 400, null, "Kullanıcı Adı veya Şifre Hatalı.!", false);
             }

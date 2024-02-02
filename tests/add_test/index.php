@@ -26,6 +26,6 @@ try {
     $pdo->commit();
 } catch (Exception $error) {
     $pdo->rollBack();
-    error_log("Exception: " . $error->getMessage());
+    die("Exception: " . $error->getMessage());
     response(null, 500, null, "Sunucu Hatası", false);
 }
