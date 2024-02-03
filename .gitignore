@@ -307,6 +307,13 @@ nbdist/
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+#.env
+
+*.env
+*.env.example
+*.env.local
+*.env.staging
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
