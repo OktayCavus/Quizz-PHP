@@ -3,11 +3,11 @@
 
 # Ignore composer dependencies
 /vendor
-/composer.phar
+composer.phar
 
 # Ignore Composer files
-/composer.json
-/composer.lock
+composer.json
+composer.lock
 
 # Ignore IDE project files
 .idea
