@@ -11,13 +11,15 @@ try {
         $email = safeOrNotControl($_POST, 'email');
         $newPassword = safeOrNotControl($_POST, "newPassword");
         if ($email) {
-            $checkUser = $pdo->prepare("Select * from students Where email = ?");
-            $checkUser->execute([$email]);
+            // $checkUser = $pdo->prepare("Select * from students Where email = ?");
+            // $checkUser->execute([$email]);
+            $checkUser = query($pdo, "Select * from students Where email = ?", [$email]);
 
             if ($checkUser->rowCount() > 0) {
                 $newPassword = sha1(md5($newPassword));
-                $updatePassword = $pdo->prepare("Update students Set password = ? Where email = ?");
-                $updatePassword->execute([$newPassword, $email]);
+                // $updatePassword = $pdo->prepare("Update students Set password = ? Where email = ?");
+                // $updatePassword->execute([$newPassword, $email]);
+                $updatePassword = query($pdo, "Update students Set password = ? Where email = ?", [$newPassword, $email]);
                 if ($updatePassword->rowCount() > 0) {
                     $pdo->commit();
                     response($_POST, 200, "Şifre Değiştirme Başarılı", null, true);
