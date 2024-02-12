@@ -62,4 +62,6 @@ if ($_POST) {
         response(NULL, 400, NULL, "Zorunlu alanları doldurun: username, password, firstname, lastname", false);
     }
     $pdo->commit();
+} else {
+    response(null, 406, null, "Geçersiz istek methodu", false);
 }

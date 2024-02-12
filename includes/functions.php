@@ -20,11 +20,19 @@ function safeOrNotControl($method, $key)
 
 function check($module, $perm)
 {
-    $valid = isset($_SESSION["user"]);
-    if ($valid) {
-        $valid = in_array($perm, $_SESSION["user"]["permissions"][$module]);
+    if (!isset($_SESSION["user"])) {
+        $_SESSION["user"]["error"] = "Oturum açmadınız.";
+        response(null, 403, null, $_SESSION["user"]["error"], false);
+        return false;
     }
-    if ($valid) {
+
+    if (!isset($_SESSION["user"]["permissions"][$module])) {
+        $_SESSION["user"]["error"] = "Modül izni tanımlı değil.";
+        response(null, 403, null, $_SESSION["user"]["error"], false);
+        return false;
+    }
+
+    if (in_array($perm, $_SESSION["user"]["permissions"][$module])) {
         return true;
     } else {
         $_SESSION["user"]["error"] = "Erişim izni yok.";

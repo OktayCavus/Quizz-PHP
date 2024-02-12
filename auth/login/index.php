@@ -51,6 +51,8 @@ try {
         } else {
             response(null, 400, null, "Kullanıcı Adı ve Şifre boş bırakılamaz.!", false);
         }
+    } else {
+        response(null, 406, null, "Geçersiz istek methodu", false);
     }
 } catch (Exception $e) {
     echo ("Exception: " . $e->getMessage());

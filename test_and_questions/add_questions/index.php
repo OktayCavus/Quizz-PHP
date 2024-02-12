@@ -48,6 +48,8 @@ try {
             }
         }
         $pdo->commit();
+    } else {
+        response(null, 406, null, "Geçersiz istek methodu", false);
     }
 } catch (Exception $error) {
     response(null, 500, null, "Sunucu Hatası", false);

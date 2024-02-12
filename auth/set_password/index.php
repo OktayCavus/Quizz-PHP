@@ -30,6 +30,8 @@ try {
         } else {
             response(null, 402, null, "Zorunlu alanı doldurun!", false);
         }
+    } else {
+        response(null, 406, null, "Geçersiz istek methodu", false);
     }
 } catch (Exception $error) {
     $pdo->rollBack();
