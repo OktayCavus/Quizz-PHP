@@ -20,14 +20,9 @@ function safeOrNotControl($method, $key)
 
 function check($module, $perm)
 {
-    if (!isset($_SESSION["user"])) {
-        $_SESSION["user"]["error"] = "Oturum açmadınız.";
-        response(null, 403, null, $_SESSION["user"]["error"], false);
-        return false;
-    }
+    if (!isset($_SESSION["user"]) || !isset($_SESSION["user"]["permissions"])) {
 
-    if (!isset($_SESSION["user"]["permissions"][$module])) {
-        $_SESSION["user"]["error"] = "Modül izni tanımlı değil.";
+        $_SESSION["user"]["error"] = "Oturum açmadınız veya oturumunuz sonlandırılmış.";
         response(null, 403, null, $_SESSION["user"]["error"], false);
         return false;
     }
