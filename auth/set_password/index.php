@@ -3,38 +3,56 @@
 require_once('../../config/baglanti.php');
 require_once "../../includes/functions.php";
 
+class PasswordReset
+{
+    private $db;
+    private $pdo;
+    private $functions;
 
+    public function __construct()
+    {
+        $this->db = new Database();
+        $this->pdo = $this->db->getPdo();
+        $this->functions = new Functions();
+    }
 
-try {
-    $pdo->beginTransaction();
-    if ($_POST) {
-        $email = $functions->safeOrNotControl($_POST, 'email');
-        $newPassword = $functions->safeOrNotControl($_POST, "newPassword");
-        if ($email) {
-            // $checkUser = $pdo->prepare("Select * from students Where email = ?");
-            // $checkUser->execute([$email]);
-            $checkUser = query($pdo, "Select * from students Where email = ?", [$email]);
+    public function resetPassword()
+    {
+        try {
+            $this->pdo->beginTransaction();
 
-            if ($checkUser->rowCount() > 0) {
-                $newPassword = sha1(md5($newPassword));
-                // $updatePassword = $pdo->prepare("Update students Set password = ? Where email = ?");
-                // $updatePassword->execute([$newPassword, $email]);
-                $updatePassword = query($pdo, "Update students Set password = ? Where email = ?", [$newPassword, $email]);
-                if ($updatePassword->rowCount() > 0) {
-                    $pdo->commit();
-                    $functions->response($_POST, 200, "Şifre Değiştirme Başarılı", null, true);
+            if ($_POST) {
+                $email = $this->functions->safeOrNotControl($_POST, 'email');
+                $newPassword = $this->functions->safeOrNotControl($_POST, "newPassword");
+
+                if ($email && $newPassword) {
+                    $checkUser = $this->db->query("SELECT * FROM students WHERE email = ?", [$email]);
+
+                    if ($checkUser->rowCount() > 0) {
+                        $newPassword = sha1(md5($newPassword));
+                        $updatePassword = $this->db->query("UPDATE students SET password = ? WHERE email = ?", [$newPassword, $email]);
+
+                        if ($updatePassword->rowCount() > 0) {
+                            $this->pdo->commit();
+                            $this->functions->response($_POST, 200, "Şifre Değiştirme Başarılı", null, true);
+                        }
+                    } else {
+                        $this->functions->response(null, 404, null, "Kullanıcı Bulunamadı!", false);
+                    }
+                } else {
+                    $this->functions->response(null, 402, null, "Zorunlu alanı doldurun!", false);
                 }
             } else {
-                $functions->response(null, 404, null, "Kullanıcı Bulunamadı!", false);
+                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
             }
-        } else {
-            $functions->response(null, 402, null, "Zorunlu alanı doldurun!", false);
+        } catch (Exception $error) {
+            $this->pdo->rollBack();
+            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            echo ("Exception: " . $error->getMessage());
         }
-    } else {
-        $functions->response(null, 406, null, "Geçersiz istek methodu", false);
     }
-} catch (Exception $error) {
-    $pdo->rollBack();
-    $functions->response(null, 500, null, "Sunucu Hatası", false);
-    echo ("Exception: " . $e->getMessage());
 }
+
+
+$passwordReset = new PasswordReset();
+$passwordReset->resetPassword();

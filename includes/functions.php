@@ -5,7 +5,7 @@ use Firebase\JWT\JWT;
 // ! bu da decode için
 use Firebase\JWT\Key;
 
-class Funcitons
+class Functions
 {
     function response($content, $code, $mesaj, $error, $success)
     {

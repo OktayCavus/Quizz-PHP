@@ -90,7 +90,7 @@ class AuthenticationHandler
     }
 }
 
-$functions = new Funcitons();
+$functions = new Functions();
 $db = new Database();
 $authenticationHandler = new AuthenticationHandler($functions, $db);
 $authenticationHandler->handleAuthentication();

@@ -1,71 +1,76 @@
 <?php
+
 require_once '../../config/baglanti.php';
 require_once '../../includes/functions.php';
-$functions = new Funcitons();
 
-try {
-    $pdo->beginTransaction();
+class QuestionManager
+{
+    private $db;
+    private $pdo;
+    private $functions;
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        $functions->response(null, 406, null, "Geçersiz istek methodu", false);
-        exit;
+    public function __construct()
+    {
+        $this->functions = new Functions();
+        $this->db = new Database();
+        $this->pdo = $this->db->getPdo();
     }
 
-    $requestHeader = $functions->headerRequest();
-    if ($requestHeader === null || !isset($requestHeader[0]["Authorization"])) {
-        exit;
-    }
+    public function addQuestion()
+    {
+        try {
+            $this->pdo->beginTransaction();
 
-    // $token = $requestHeader[0]["Authorization"];
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+                exit;
+            }
 
-    // // AccessToken'ın doğruluğunu kontrol et
-    // $username = $functions->verifyToken($token);
-    // if (!$username) {
-    //     $functions->response(null, 401, null, "Yetkilendirme başarısız", false);
-    //     exit;
-    // }
+            $requestHeader = $this->functions->headerRequest();
+            if ($requestHeader === null || !isset($requestHeader[0]["Authorization"])) {
+                exit;
+            }
 
+            $testID = $this->functions->safeOrNotControl($_POST, "testID");
+            $questionText = $this->functions->safeOrNotControl($_POST, "questionText");
+            $optionText = $_POST["optionText"];
+            $isCorrect = $_POST["isCorrect"];
 
+            if (!$testID || !$questionText || !$optionText || !$isCorrect) {
+                $this->functions->response(null, 402, null, "Zorunlu Alanları Doldurun!", false);
+                exit;
+            }
 
-    $testID = $functions->safeOrNotControl($_POST, "testID");
-    $questionText = $functions->safeOrNotControl($_POST, "questionText");
-    $optionText = $_POST["optionText"];
-    $isCorrect = $_POST["isCorrect"];
+            $questions = $this->db->query("INSERT INTO questions (test_id, question_text) VALUES (?, ?)", [$testID, $questionText]);
+            if ($questions->rowCount() <= 0) {
+                $this->functions->response(null, 402, null, "Soru eklenemedi", false);
+                exit;
+            }
 
+            $lastInsertID = $this->pdo->lastInsertId();
+            $optionTextList = explode(",", $optionText);
+            $isCorrectList = explode(",", $isCorrect);
 
-    if (!$testID || !$questionText || !$optionText || !$isCorrect) {
-        $functions->response(null, 402, null, "Zorunlu Alanları Doldurun!", false);
-        exit;
-    }
+            foreach ($optionTextList as $index => $option) {
+                $optionText = trim($option, "[]\"");
+                $isCorrect = trim($isCorrectList[$index], "[]\"");
+                $options = $this->db->query("INSERT INTO options (question_id, option_text, is_correct) VALUES (?,?,?)", [$lastInsertID, $optionText, $isCorrect]);
+                if ($options->rowCount() <= 0) {
+                    $this->functions->response(null, 402, null, "Cevaplar Eklenemedi", false);
+                    exit;
+                }
+            }
 
+            $this->functions->response($_POST, 200, "Soru ve Cevaplar Başarıyla Eklendi", null, true);
 
-    $questions = $db->query($pdo, "INSERT INTO questions (test_id, question_text) VALUES (?, ?)", [$testID, $questionText]);
-    if ($questions->rowCount() <= 0) {
-        $functions->response(null, 402, null, "Soru eklenemedi", false);
-        exit;
-    }
-
-
-    $lastInsertID = $pdo->lastInsertId();
-
-
-    $optionTextList = explode(",", $optionText);
-    $isCorrectList = explode(",", $isCorrect);
-    foreach ($optionTextList as $index => $option) {
-        $optionText = trim($option, "[]\"");
-        $isCorrect = trim($isCorrectList[$index], "[]\"");
-        $options = $db->query($pdo, "INSERT INTO options (question_id, option_text, is_correct) VALUES (?,?,?)", [$lastInsertID, $optionText, $isCorrect]);
-        if ($options->rowCount() <= 0) {
-            $functions->response(null, 402, null, "Cevaplar Eklenemedi", false);
-            exit;
+            $this->pdo->commit();
+        } catch (Exception $error) {
+            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            $this->pdo->rollBack();
+            die($error->getMessage());
         }
     }
-
-    $functions->response($_POST, 200, "Soru ve Cevaplar Başarıyla Eklendi", null, true);
-
-    $pdo->commit();
-} catch (Exception $error) {
-    $functions->response(null, 500, null, "Sunucu Hatası", false);
-    $pdo->rollBack();
-    die($error->getMessage());
 }
+
+$questionManager = new QuestionManager();
+$questionManager->addQuestion();

@@ -74,7 +74,7 @@ class UserRegistration
     }
 }
 
-$functions = new Funcitons();
+$functions = new Functions();
 $db = new Database();
 $registrationHandler = new UserRegistration($functions, $db);
 $registrationHandler->registerUser();
