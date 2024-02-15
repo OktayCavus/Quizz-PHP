@@ -3,65 +3,78 @@
 require_once('../../config/baglanti.php');
 require_once "../../includes/functions.php";
 
-header("Content-Type: application/json; charset=utf-8");
-$pdo->beginTransaction();
+class UserRegistration
+{
+    private $functions;
+    private $db;
 
-if ($_POST) {
-    $islem = array();
-    $username = safeOrNotControl($_POST, 'username');
-    $password = safeOrNotControl($_POST, 'password');
-    $role_id = safeOrNotControl($_POST, 'role_id');
-    $firstname = safeOrNotControl($_POST, 'firstname');
-    $lastname = safeOrNotControl($_POST, 'lastname');
-    $email = safeOrNotControl($_POST, 'email');
-    $phonenumber = safeOrNotControl($_POST, 'phonenumber');
+    public function __construct($functions, $db)
+    {
+        $this->functions = $functions;
+        $this->db = $db;
+    }
 
-    if ($username && $password && $role_id && $firstname && $lastname && $email) {
-        if (strlen($password) >= 6) {
-            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                response(NULL, 403, NULL, "Geçersiz e-posta error", false);
-            } else {
-                // $checkUsername = $pdo->prepare("Select * From students Where username = ? ");
-                // $checkUsername->execute([$username]);
-                $checkUsername = query($pdo, "Select * From students Where username = ? ", [$username]);
-                if ($checkUsername->rowCount() > 0) {
-                    response(null, 400, null, "Kullanıcı adı kullanılıyor.", false);
-                } else {
-                    // $checkEmail = $pdo->prepare("Select * From students Where email = ?");
-                    // $checkEmail->execute([$email]);
-                    $checkEmail = query($pdo, "Select * From students Where email = ?", [$email]);
-                    if ($checkEmail->rowCount() > 0) {
-                        response(null, 400, null, "Bu E-posta adresi kullanılıyor.", false);
+    public function registerUser()
+    {
+        $this->db->beginTransaction();
+
+        if ($_POST) {
+            $islem = array();
+            $username = $this->functions->safeOrNotControl($_POST, 'username');
+            $password = $this->functions->safeOrNotControl($_POST, 'password');
+            $role_id = $this->functions->safeOrNotControl($_POST, 'role_id');
+            $firstname = $this->functions->safeOrNotControl($_POST, 'firstname');
+            $lastname = $this->functions->safeOrNotControl($_POST, 'lastname');
+            $email = $this->functions->safeOrNotControl($_POST, 'email');
+            $phonenumber = $this->functions->safeOrNotControl($_POST, 'phonenumber');
+
+            if ($username && $password && $role_id && $firstname && $lastname && $email) {
+                if (strlen($password) >= 6) {
+                    if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $this->functions->response(NULL, 403, NULL, "Geçersiz e-posta error", false);
                     } else {
-                        try {
-                            $password = sha1(md5($password));
-                            // $sorgu = $pdo->prepare("INSERT INTO students (username, password, role_id , first_name, last_name, email, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                            // $sorgu->execute([$username, $password, $role_id, $firstname, $lastname, $email, $phonenumber]);
-                            $sorgu = query(
-                                $pdo,
-                                "INSERT INTO students (username, password, role_id , first_name, last_name, email, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                [$username, $password, $role_id, $firstname, $lastname, $email, $phonenumber]
-                            );
-                            if ($sorgu->rowCount() > 0) {
-                                unset($_POST['password']);
-                                response($_POST, 200, "Kayıt eklendi", NULL, true);
+                        $checkUsername = $this->db->query("Select * From students Where username = ? ", [$username]);
+                        if ($checkUsername->rowCount() > 0) {
+                            $this->functions->response(null, 400, null, "Kullanıcı adı kullanılıyor.", false);
+                        } else {
+                            $checkEmail = $this->db->query("Select * From students Where email = ?", [$email]);
+                            if ($checkEmail->rowCount() > 0) {
+                                $this->functions->response(null, 400, null, "Bu E-posta adresi kullanılıyor.", false);
                             } else {
-                                response(NULL, 201, NULL, "Kayıt Eklenemedi", false);
+                                try {
+                                    $password = sha1(md5($password));
+                                    $sorgu = $this->db->query(
+                                        "INSERT INTO students (username, password, role_id , first_name, last_name, email, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                        [$username, $password, $role_id, $firstname, $lastname, $email, $phonenumber]
+                                    );
+                                    if ($sorgu->rowCount() > 0) {
+                                        unset($_POST['password']);
+                                        $this->functions->response($_POST, 200, "Kayıt eklendi", NULL, true);
+                                    } else {
+                                        $this->functions->response(NULL, 201, NULL, "Kayıt Eklenemedi", false);
+                                    }
+                                } catch (PDOException $e) {
+                                    $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+                                    $this->db->rollBack();
+                                    echo 'Veri eklenirken hata oluştu: ' . $e->getMessage();
+                                }
                             }
-                        } catch (PDOException $e) {
-                            response(null, 500, null, "Sunucu Hatası", false);
-                            echo 'Veri eklenirken hata oluştu: ' . $e->getMessage();
                         }
                     }
+                } else {
+                    $this->functions->response(NULL, 402, NULL, "Şifre en az 6 karakter olmalıdır.", false);
                 }
+            } else {
+                $this->functions->response(NULL, 400, NULL, "Zorunlu alanları doldurun: username, password, firstname, lastname", false);
             }
+            $this->db->commit();
         } else {
-            response(NULL, 402, NULL, "Şifre en az 6 karakter olmalıdır.", false);
+            $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
         }
-    } else {
-        response(NULL, 400, NULL, "Zorunlu alanları doldurun: username, password, firstname, lastname", false);
     }
-    $pdo->commit();
-} else {
-    response(null, 406, null, "Geçersiz istek methodu", false);
 }
+
+$functions = new Funcitons();
+$db = new Database();
+$registrationHandler = new UserRegistration($functions, $db);
+$registrationHandler->registerUser();
