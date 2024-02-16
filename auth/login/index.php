@@ -1,7 +1,7 @@
 <?php
 
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+use Firebase\JWT\KEY;
 
 require_once "../../includes/functions.php";
 require_once "../../config/baglanti.php";
@@ -59,7 +59,7 @@ class AuthenticationHandler
                 unset($user["password"]);
 
                 $_SESSION["user"] = $user;
-
+                print_r($_SESSION["user"]["username"]);
                 $secret_key = $_ENV["SECRET_KEY"];
                 $expiry_time = time() + (60 * 60);
                 $payload = array(
@@ -68,11 +68,12 @@ class AuthenticationHandler
                 );
 
                 $access_token = JWT::encode($payload, $secret_key, 'HS256');
+                $_SESSION["accessToken"] = $access_token;
+                echo $_SESSION["accessToken"];
                 $headers = [
-                    'Authorization: Bearer ' .  $access_token,
+                    'Authorization: Bearer ' .  $_SESSION["accessToken"],
                     'Content-Type: application/json'
                 ];
-
                 foreach ($headers as $header) {
                     header($header);
                 }

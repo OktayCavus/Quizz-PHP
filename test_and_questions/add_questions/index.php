@@ -30,40 +30,48 @@ class QuestionManager
             if ($requestHeader === null || !isset($requestHeader[0]["Authorization"])) {
                 exit;
             }
+            $token = str_replace('Bearer ', '', $requestHeader[0]["Authorization"]);
+            $username = $this->functions->verifyToken($token);
 
-            $testID = $this->functions->safeOrNotControl($_POST, "testID");
-            $questionText = $this->functions->safeOrNotControl($_POST, "questionText");
-            $optionText = $_POST["optionText"];
-            $isCorrect = $_POST["isCorrect"];
+            if ($username == $_SESSION["user"]["username"]) {
+                if ($this->functions->check("QSTN", 5)) {
+                    $testID = $this->functions->safeOrNotControl($_POST, "testID");
+                    $questionText = $this->functions->safeOrNotControl($_POST, "questionText");
+                    $optionText = $_POST["optionText"];
+                    $isCorrect = $_POST["isCorrect"];
 
-            if (!$testID || !$questionText || !$optionText || !$isCorrect) {
-                $this->functions->response(null, 402, null, "Zorunlu Alanları Doldurun!", false);
-                exit;
-            }
+                    if (!$testID || !$questionText || !$optionText || !$isCorrect) {
+                        $this->functions->response(null, 402, null, "Zorunlu Alanları Doldurun!", false);
+                        exit;
+                    }
 
-            $questions = $this->db->query("INSERT INTO questions (test_id, question_text) VALUES (?, ?)", [$testID, $questionText]);
-            if ($questions->rowCount() <= 0) {
-                $this->functions->response(null, 402, null, "Soru eklenemedi", false);
-                exit;
-            }
+                    $questions = $this->db->query("INSERT INTO questions (test_id, question_text) VALUES (?, ?)", [$testID, $questionText]);
+                    if ($questions->rowCount() <= 0) {
+                        $this->functions->response(null, 402, null, "Soru eklenemedi", false);
+                        exit;
+                    }
 
-            $lastInsertID = $this->pdo->lastInsertId();
-            $optionTextList = explode(",", $optionText);
-            $isCorrectList = explode(",", $isCorrect);
+                    $lastInsertID = $this->pdo->lastInsertId();
+                    $optionTextList = explode(",", $optionText);
+                    $isCorrectList = explode(",", $isCorrect);
 
-            foreach ($optionTextList as $index => $option) {
-                $optionText = trim($option, "[]\"");
-                $isCorrect = trim($isCorrectList[$index], "[]\"");
-                $options = $this->db->query("INSERT INTO options (question_id, option_text, is_correct) VALUES (?,?,?)", [$lastInsertID, $optionText, $isCorrect]);
-                if ($options->rowCount() <= 0) {
-                    $this->functions->response(null, 402, null, "Cevaplar Eklenemedi", false);
-                    exit;
+                    foreach ($optionTextList as $index => $option) {
+                        $optionText = trim($option, "[]\"");
+                        $isCorrect = trim($isCorrectList[$index], "[]\"");
+                        $options = $this->db->query("INSERT INTO options (question_id, option_text, is_correct) VALUES (?,?,?)", [$lastInsertID, $optionText, $isCorrect]);
+                        if ($options->rowCount() <= 0) {
+                            $this->functions->response(null, 402, null, "Cevaplar Eklenemedi", false);
+                            exit;
+                        }
+                    }
+
+                    $this->functions->response($_POST, 200, "Soru ve Cevaplar Başarıyla Eklendi", null, true);
+
+                    $this->pdo->commit();
                 }
+            } else {
+                $this->functions->response(null, 401, null, "Yetkisiz Erişim (Tokenler uyuşmuyor)", false);
             }
-
-            $this->functions->response($_POST, 200, "Soru ve Cevaplar Başarıyla Eklendi", null, true);
-
-            $this->pdo->commit();
         } catch (Exception $error) {
             $this->functions->response(null, 500, null, "Sunucu Hatası", false);
             $this->pdo->rollBack();

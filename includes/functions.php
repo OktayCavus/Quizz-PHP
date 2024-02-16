@@ -45,21 +45,21 @@ class Functions
     function headerRequest()
     {
         $requestHeader = apache_request_headers();
-
         if (!isset($requestHeader["Authorization"])) {
             $this->response(null, 401, null, "Yetkisiz Erişim (authorization header eksik)", false);
             return;
         }
-
         return array($requestHeader);
     }
 
     function verifyToken($token)
     {
+        $sec_key = $_ENV["SECRET_KEY"];
         try {
-            $decoded = JWT::decode($token, new Key($_GET["SECRET_KEY"], 'HS256'));
+            $decoded = JWT::decode($token, new Key($sec_key, 'HS256'));
             return $decoded->username;
         } catch (Exception $e) {
+            $this->response(null, 408, null, $e->getMessage(), false);
             return false;
         }
     }
