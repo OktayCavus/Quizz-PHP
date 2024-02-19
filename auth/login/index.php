@@ -61,7 +61,7 @@ class AuthenticationHandler
                 $_SESSION["user"] = $user;
                 print_r($_SESSION["user"]["username"]);
                 $secret_key = $_ENV["SECRET_KEY"];
-                $expiry_time = time() + (60 * 60);
+                $expiry_time = time() + (60 * 60) * 24;
                 $payload = array(
                     "username" => $user["username"],
                     "exp" => $expiry_time

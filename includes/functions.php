@@ -7,12 +7,12 @@ use Firebase\JWT\Key;
 
 class Functions
 {
-    function response($content, $code, $mesaj, $error, $success)
+    function response($content, $code, $message, $error, $success)
     {
         $islem["content"] = $content;
         $islem["code"] = $code;
         $islem["error"] = $error;
-        $islem["mesaj"] = $mesaj;
+        $islem["message"] = $message;
         $islem["success"] = $success;
 
         $sonuc = json_encode($islem, JSON_UNESCAPED_UNICODE);

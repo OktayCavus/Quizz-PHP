@@ -7,11 +7,13 @@ class UserRegistration
 {
     private $functions;
     private $db;
+    private $defaultRoleID;
 
     public function __construct($functions, $db)
     {
         $this->functions = $functions;
         $this->db = $db;
+        $this->defaultRoleID = 2;
     }
 
     public function registerUser()
@@ -22,7 +24,8 @@ class UserRegistration
             $islem = array();
             $username = $this->functions->safeOrNotControl($_POST, 'username');
             $password = $this->functions->safeOrNotControl($_POST, 'password');
-            $role_id = $this->functions->safeOrNotControl($_POST, 'role_id');
+            // $role_id = $this->functions->safeOrNotControl($_POST, 'role_id');
+            $role_id = $this->defaultRoleID;
             $firstname = $this->functions->safeOrNotControl($_POST, 'firstname');
             $lastname = $this->functions->safeOrNotControl($_POST, 'lastname');
             $email = $this->functions->safeOrNotControl($_POST, 'email');
