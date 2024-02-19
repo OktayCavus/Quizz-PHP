@@ -2,6 +2,7 @@
 
 require_once '../../config/baglanti.php';
 require_once '../../includes/functions.php';
+require_once "../../includes/constant.php";
 
 class QuestionManager
 {
@@ -22,7 +23,7 @@ class QuestionManager
             $this->pdo->beginTransaction();
 
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
                 exit;
             }
 
@@ -41,13 +42,13 @@ class QuestionManager
                     $isCorrect = $_POST["isCorrect"];
 
                     if (!$testID || !$questionText || !$optionText || !$isCorrect) {
-                        $this->functions->response(null, 402, null, "Zorunlu Alanları Doldurun!", false);
+                        $this->functions->response(null, 402, null, ERR_FILL_REQUIRED_FIELDS, false);
                         exit;
                     }
 
                     $questions = $this->db->query("INSERT INTO questions (test_id, question_text) VALUES (?, ?)", [$testID, $questionText]);
                     if ($questions->rowCount() <= 0) {
-                        $this->functions->response(null, 402, null, "Soru eklenemedi", false);
+                        $this->functions->response(null, 402, null, ERR_QUESTION_ADD_FAILED, false);
                         exit;
                     }
 
@@ -60,20 +61,20 @@ class QuestionManager
                         $isCorrect = trim($isCorrectList[$index], "[]\"");
                         $options = $this->db->query("INSERT INTO options (question_id, option_text, is_correct) VALUES (?,?,?)", [$lastInsertID, $optionText, $isCorrect]);
                         if ($options->rowCount() <= 0) {
-                            $this->functions->response(null, 402, null, "Cevaplar Eklenemedi", false);
+                            $this->functions->response(null, 402, null, ERR_ANSWERS_ADD_FAILED, false);
                             exit;
                         }
                     }
 
-                    $this->functions->response($_POST, 200, "Soru ve Cevaplar Başarıyla Eklendi", null, true);
+                    $this->functions->response($_POST, 200, MESSAGE_SUCCESS_QUESTION_ADDED, null, true);
 
                     $this->pdo->commit();
                 }
             } else {
-                $this->functions->response(null, 401, null, "Yetkisiz Erişim (Tokenler uyuşmuyor)", false);
+                $this->functions->response(null, 401, null, ERR_UNAUTHORIZED_ACCESS, false);
             }
         } catch (Exception $error) {
-            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
             $this->pdo->rollBack();
             die($error->getMessage());
         }

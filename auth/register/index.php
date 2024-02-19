@@ -2,6 +2,8 @@
 
 require_once('../../config/baglanti.php');
 require_once "../../includes/functions.php";
+require_once "../../includes/constant.php";
+
 
 class UserRegistration
 {
@@ -34,15 +36,15 @@ class UserRegistration
             if ($username && $password && $role_id && $firstname && $lastname && $email) {
                 if (strlen($password) >= 6) {
                     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                        $this->functions->response(NULL, 403, NULL, "Geçersiz e-posta error", false);
+                        $this->functions->response(NULL, 403, NULL, ERR_INVALID_EMAIL, false);
                     } else {
                         $checkUsername = $this->db->query("Select * From students Where username = ? ", [$username]);
                         if ($checkUsername->rowCount() > 0) {
-                            $this->functions->response(null, 400, null, "Kullanıcı adı kullanılıyor.", false);
+                            $this->functions->response(null, 400, null, ERR_USERNAME_ALREADY_IN_USE, false);
                         } else {
                             $checkEmail = $this->db->query("Select * From students Where email = ?", [$email]);
                             if ($checkEmail->rowCount() > 0) {
-                                $this->functions->response(null, 400, null, "Bu E-posta adresi kullanılıyor.", false);
+                                $this->functions->response(null, 400, null, ERR_EMAIL_ALREADY_IN_USE, false);
                             } else {
                                 try {
                                     $password = sha1(md5($password));
@@ -52,27 +54,27 @@ class UserRegistration
                                     );
                                     if ($sorgu->rowCount() > 0) {
                                         unset($_POST['password']);
-                                        $this->functions->response($_POST, 200, "Kayıt eklendi", NULL, true);
+                                        $this->functions->response($_POST, 200, MESSAGE_RECORD_ADDED, NULL, true);
                                     } else {
-                                        $this->functions->response(NULL, 201, NULL, "Kayıt Eklenemedi", false);
+                                        $this->functions->response(NULL, 201, NULL, ERR_RECORD_NOT_ADDED, false);
                                     }
                                 } catch (PDOException $e) {
-                                    $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+                                    $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
                                     $this->db->rollBack();
-                                    echo 'Veri eklenirken hata oluştu: ' . $e->getMessage();
+                                    die($e->getMessage());
                                 }
                             }
                         }
                     }
                 } else {
-                    $this->functions->response(NULL, 402, NULL, "Şifre en az 6 karakter olmalıdır.", false);
+                    $this->functions->response(NULL, 402, NULL, ERR_PASSWORD_MINIMUM_LENGTH, false);
                 }
             } else {
-                $this->functions->response(NULL, 400, NULL, "Zorunlu alanları doldurun: username, password, firstname, lastname", false);
+                $this->functions->response(NULL, 400, NULL, ERR_FILL_REQUIRED_FIELDS, false);
             }
             $this->db->commit();
         } else {
-            $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+            $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
         }
     }
 }

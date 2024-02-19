@@ -4,6 +4,8 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\KEY;
 
 require_once "../../includes/functions.php";
+require_once "../../includes/constant.php";
+
 require_once "../../config/baglanti.php";
 require_once __DIR__ . "/../../vendor/autoload.php";
 
@@ -24,7 +26,7 @@ class AuthenticationHandler
 
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
                 exit;
             }
 
@@ -32,7 +34,7 @@ class AuthenticationHandler
             $password = $this->functions->safeOrNotControl($_POST, "password");
 
             if (!$username || !$password) {
-                $this->functions->response(null, 400, null, "Kullanıcı Adı ve Şifre boş bırakılamaz.!", false);
+                $this->functions->response(null, 400, null, ERR_EMPTY_USERNAME_OR_PASSWORD, false);
                 exit;
             }
 
@@ -69,7 +71,7 @@ class AuthenticationHandler
 
                 $access_token = JWT::encode($payload, $secret_key, 'HS256');
                 $_SESSION["accessToken"] = $access_token;
-                echo $_SESSION["accessToken"];
+
                 $headers = [
                     'Authorization: Bearer ' .  $_SESSION["accessToken"],
                     'Content-Type: application/json'
@@ -77,16 +79,16 @@ class AuthenticationHandler
                 foreach ($headers as $header) {
                     header($header);
                 }
-
-                $this->functions->response($user, 200, "Kullanıcı Girişi Başarılı", null, true, $headers);
+                $user["accessToken"] = $_SESSION["accessToken"];
+                $this->functions->response($user, 200, MESSAGE_SUCCESS_LOGIN, null, true);
             } else {
-                $this->functions->response(null, 400, null, "Kullanıcı Adı veya Şifre Hatalı.!", false);
+                $this->functions->response(null, 400, null, ERR_INCORRECT_USERNAME_OR_PASSWORD, false);
             }
             $this->db->commit();
         } catch (Exception $e) {
             echo ("Exception: " . $e->getMessage());
             $this->db->rollBack();
-            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
         }
     }
 }

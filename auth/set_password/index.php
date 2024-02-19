@@ -2,6 +2,8 @@
 
 require_once('../../config/baglanti.php');
 require_once "../../includes/functions.php";
+require_once "../../includes/constant.php";
+
 
 class PasswordReset
 {
@@ -34,20 +36,20 @@ class PasswordReset
 
                         if ($updatePassword->rowCount() > 0) {
                             $this->pdo->commit();
-                            $this->functions->response($_POST, 200, "Şifre Değiştirme Başarılı", null, true);
+                            $this->functions->response($_POST, 200, MESSAGE_PASSWORD_CHANGE_SUCCESSFUL, null, true);
                         }
                     } else {
-                        $this->functions->response(null, 404, null, "Kullanıcı Bulunamadı!", false);
+                        $this->functions->response(null, 404, null, ERR_USER_NOT_FOUND, false);
                     }
                 } else {
-                    $this->functions->response(null, 402, null, "Zorunlu alanı doldurun!", false);
+                    $this->functions->response(null, 402, null, ERR_FILL_REQUIRED_FIELDS, false);
                 }
             } else {
-                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
             }
         } catch (Exception $error) {
             $this->pdo->rollBack();
-            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
             echo ("Exception: " . $error->getMessage());
         }
     }

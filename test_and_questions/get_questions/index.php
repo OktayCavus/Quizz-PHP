@@ -1,5 +1,6 @@
 <?php
 require_once '../../config/baglanti.php';
+require_once "../../includes/constant.php";
 require_once '../../includes/functions.php';
 class QuestionGetter
 {
@@ -18,7 +19,7 @@ class QuestionGetter
     {
         try {
             if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
             } else {
                 $this->pdo->beginTransaction();
                 $requestHeader = $this->functions->headerRequest();
@@ -31,7 +32,7 @@ class QuestionGetter
                     if ($this->functions->check("QSTN", 6)) {
                         $testID = $this->functions->safeOrNotControl($_GET, 'testID');
                         if (!$testID) {
-                            $this->functions->response(null, 402, null, "Zorunlu Alanları Doldurun!", false);
+                            $this->functions->response(null, 402, null, ERR_FILL_REQUIRED_FIELDS, false);
                             exit;
                         }
                         $questions = $this->db->query("
@@ -99,18 +100,18 @@ class QuestionGetter
                             $responseContent = array(
                                 'questions' => array_values($allQuestions)
                             );
-                            $this->functions->response($responseContent, 200, "Soru listeleme başarılı", null, true);
+                            $this->functions->response($responseContent, 200, MESSAGE_SUCCESS_QUESTION_LISTING, null, true);
                         } else {
-                            $this->functions->response(null, 402, null, "Soru listeleme başarısız", false);
+                            $this->functions->response(null, 402, null, ERR_QUESTION_LISTING_FAILED, false);
                             exit;
                         }
                     }
                 } else {
-                    $this->functions->response(null, 401, null, "Yetkisiz Erişim (Tokenler uyuşmuyor)", false);
+                    $this->functions->response(null, 401, null, ERR_UNAUTHORIZED_ACCESS, false);
                 }
             }
         } catch (Exception $e) {
-            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
             $this->pdo->rollBack();
             die($e->getMessage());
         }

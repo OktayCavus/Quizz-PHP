@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once "constant.php";
+
 use Firebase\JWT\JWT;
 // ! bu da decode için
 use Firebase\JWT\Key;
@@ -27,17 +29,14 @@ class Functions
     function check($module, $perm)
     {
         if (!isset($_SESSION["user"]) || !isset($_SESSION["user"]["permissions"])) {
-
-            $_SESSION["user"]["error"] = "Oturum açmadınız veya oturumunuz sonlandırılmış.";
-            $this->response(null, 403, null, $_SESSION["user"]["error"], false);
+            $this->response(null, 403, null, ERR_SESSION_NOT_STARTED, false);
             return false;
         }
 
         if (in_array($perm, $_SESSION["user"]["permissions"][$module])) {
             return true;
         } else {
-            $_SESSION["user"]["error"] = "Erişim izni yok.";
-            $this->response(null, 403, null, $_SESSION["user"]["error"], false);
+            $this->response(null, 403, null, ERR_ACCESS_DENIED, false);
             return false;
         }
     }
@@ -46,7 +45,7 @@ class Functions
     {
         $requestHeader = apache_request_headers();
         if (!isset($requestHeader["Authorization"])) {
-            $this->response(null, 401, null, "Yetkisiz Erişim (authorization header eksik)", false);
+            $this->response(null, 401, null, ERR_MISSING_AUTHORIZATION_HEADER, false);
             return;
         }
         return array($requestHeader);

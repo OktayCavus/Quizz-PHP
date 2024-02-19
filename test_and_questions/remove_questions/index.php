@@ -1,6 +1,7 @@
 <?php
 
 require_once '../../config/baglanti.php';
+require_once "../../includes/constant.php";
 require_once '../../includes/functions.php';
 
 class QuestionRemover
@@ -20,7 +21,7 @@ class QuestionRemover
     {
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
-                $this->functions->response(null, 406, null, "Geçersiz istek methodu", false);
+                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
             } else {
                 $this->pdo->beginTransaction();
                 $requestHeader = $this->functions->headerRequest();
@@ -42,24 +43,24 @@ class QuestionRemover
                             if ($removeOptions->rowCount() > 0) {
                                 $removeQuestion = $this->db->query("DELETE FROM questions where question_id = ?", [$question]);
                                 if ($removeQuestion->rowCount() > 0) {
-                                    $this->functions->response($_GET, 200, "Soru Silme İşlemi Başarılı", null, true);
+                                    $this->functions->response($_GET, 200, MESSAGE_SUCCESS_QUESTION_DELETE, null, true);
                                 } else {
-                                    $this->functions->response(null, 405, null, "Soru Silme İşlemi Başarısız (SORULAR)", false);
+                                    $this->functions->response(null, 405, null, ERR_QUESTION_DELETE_FAILED_Q, false);
                                 }
                             } else {
-                                $this->functions->response(null, 405, null, "Soru Silme İşlemi Başarısız (CEVAPLAR)", false);
+                                $this->functions->response(null, 405, null, ERR_QUESTION_DELETE_FAILED_A, false);
                             }
                         }
                     }
                 } else {
-                    $this->functions->response(null, 401, null, "Yetkisiz Erişim (Tokenler uyuşmuyor)", false);
+                    $this->functions->response(null, 401, null, ERR_UNAUTHORIZED_ACCESS, false);
                 }
                 $this->pdo->commit();
             }
         } catch (Exception $error) {
             $this->pdo->rollBack();
             die("Exception: " . $error->getMessage());
-            $this->functions->response(null, 500, null, "Sunucu Hatası", false);
+            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
         }
     }
 }
