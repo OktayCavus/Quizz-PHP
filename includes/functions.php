@@ -1,21 +1,26 @@
 <?php
 session_start();
 
-require_once "constant.php";
-
 use Firebase\JWT\JWT;
 // ! bu da decode için
 use Firebase\JWT\Key;
 
 class Functions
 {
-    function response($content, $code, $message, $error, $success)
+    private $lang;
+
+    public function __construct()
+    {
+        $this->lang = new Language('tr');
+    }
+
+    public function response($content, $code, $message, $error, $status)
     {
         $islem["content"] = $content;
         $islem["code"] = $code;
         $islem["error"] = $error;
         $islem["message"] = $message;
-        $islem["success"] = $success;
+        $islem["status"] = $status;
 
         $sonuc = json_encode($islem, JSON_UNESCAPED_UNICODE);
         echo $sonuc;
@@ -29,14 +34,14 @@ class Functions
     function check($module, $perm)
     {
         if (!isset($_SESSION["user"]) || !isset($_SESSION["user"]["permissions"])) {
-            $this->response(null, 403, null, ERR_SESSION_NOT_STARTED, false);
+            $this->response(null, 403, null, $this->lang->getMessage('ERR_SESSION_NOT_STARTED'), false);
             return false;
         }
 
         if (in_array($perm, $_SESSION["user"]["permissions"][$module])) {
             return true;
         } else {
-            $this->response(null, 403, null, ERR_ACCESS_DENIED, false);
+            $this->response(null, 403, null, $this->lang->getMessage('ERR_ACCESS_DENIED'), false);
             return false;
         }
     }
@@ -45,7 +50,7 @@ class Functions
     {
         $requestHeader = apache_request_headers();
         if (!isset($requestHeader["Authorization"])) {
-            $this->response(null, 401, null, ERR_MISSING_AUTHORIZATION_HEADER, false);
+            $this->response(null, 401, null, $this->lang->getMessage('ERR_MISSING_AUTHORIZATION_HEADER'), false);
             return;
         }
         return array($requestHeader);

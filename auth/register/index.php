@@ -2,7 +2,8 @@
 
 require_once('../../config/baglanti.php');
 require_once "../../includes/functions.php";
-require_once "../../includes/constant.php";
+
+require_once '../../languages/language.php';
 
 
 class UserRegistration
@@ -10,12 +11,18 @@ class UserRegistration
     private $functions;
     private $db;
     private $defaultRoleID;
-
+    private $lang;
+    private $languageHeader;
+    private $selectedLang;
     public function __construct($functions, $db)
     {
         $this->functions = $functions;
         $this->db = $db;
         $this->defaultRoleID = 2;
+
+        $this->languageHeader = apache_request_headers();
+        $this->selectedLang = $this->languageHeader['Accept-Language'];
+        $this->lang = new Language($this->selectedLang);
     }
 
     public function registerUser()
@@ -36,15 +43,15 @@ class UserRegistration
             if ($username && $password && $role_id && $firstname && $lastname && $email) {
                 if (strlen($password) >= 6) {
                     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                        $this->functions->response(NULL, 403, NULL, ERR_INVALID_EMAIL, false);
+                        $this->functions->response(NULL, 403, NULL, $this->lang->getMessage('ERR_INVALID_EMAIL'), false);
                     } else {
                         $checkUsername = $this->db->query("Select * From students Where username = ? ", [$username]);
                         if ($checkUsername->rowCount() > 0) {
-                            $this->functions->response(null, 400, null, ERR_USERNAME_ALREADY_IN_USE, false);
+                            $this->functions->response(null, 400, null, $this->lang->getMessage('ERR_USERNAME_ALREADY_IN_USE'), false);
                         } else {
                             $checkEmail = $this->db->query("Select * From students Where email = ?", [$email]);
                             if ($checkEmail->rowCount() > 0) {
-                                $this->functions->response(null, 400, null, ERR_EMAIL_ALREADY_IN_USE, false);
+                                $this->functions->response(null, 400, null, $this->lang->getMessage('ERR_EMAIL_ALREADY_IN_USE'), false);
                             } else {
                                 try {
                                     $password = sha1(md5($password));
@@ -54,12 +61,12 @@ class UserRegistration
                                     );
                                     if ($sorgu->rowCount() > 0) {
                                         unset($_POST['password']);
-                                        $this->functions->response($_POST, 200, MESSAGE_RECORD_ADDED, NULL, true);
+                                        $this->functions->response($_POST, 200, $this->lang->getMessage('MESSAGE_RECORD_ADDED'), NULL, true);
                                     } else {
-                                        $this->functions->response(NULL, 201, NULL, ERR_RECORD_NOT_ADDED, false);
+                                        $this->functions->response(NULL, 201, NULL, $this->lang->getMessage('ERR_RECORD_NOT_ADDED'), false);
                                     }
                                 } catch (PDOException $e) {
-                                    $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
+                                    $this->functions->response(null, 500, null, $this->lang->getMessage('ERR_SERVER_ERROR'), false);
                                     $this->db->rollBack();
                                     die($e->getMessage());
                                 }
@@ -67,14 +74,14 @@ class UserRegistration
                         }
                     }
                 } else {
-                    $this->functions->response(NULL, 402, NULL, ERR_PASSWORD_MINIMUM_LENGTH, false);
+                    $this->functions->response(NULL, 402, NULL, $this->lang->getMessage('ERR_PASSWORD_MINIMUM_LENGTH'), false);
                 }
             } else {
-                $this->functions->response(NULL, 400, NULL, ERR_FILL_REQUIRED_FIELDS, false);
+                $this->functions->response(NULL, 400, NULL,  $this->lang->getMessage('ERR_FILL_REQUIRED_FIELDS'), false);
             }
             $this->db->commit();
         } else {
-            $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
+            $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
         }
     }
 }

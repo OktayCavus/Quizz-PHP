@@ -1,28 +1,32 @@
 <?php
 require_once '../../config/baglanti.php';
 require_once '../../includes/functions.php';
-require_once "../../includes/constant.php";
+
+require_once '../../languages/language.php';
 
 class TestController
 {
     private $db;
     private $functions;
     private $pdo;
-
+    private $lang;
+    private $requestHeader;
     public function __construct()
     {
         $this->db = new Database();
         $this->pdo = $this->db->getPdo();
         $this->functions = new Functions();
+        $this->requestHeader = $this->functions->headerRequest();
+        $selectedLang = $this->requestHeader[0]['Accept-Language'];
+        $this->lang = new Language($selectedLang);
     }
 
     public function addTest()
     {
-        $requestHeader = $this->functions->headerRequest();
-        if ($requestHeader === null || !isset($requestHeader[0]["Authorization"])) {
+        if ($this->requestHeader === null || !isset($this->requestHeader[0]["Authorization"])) {
             exit;
         }
-        $token = str_replace('Bearer ', '', $requestHeader[0]["Authorization"]);
+        $token = str_replace('Bearer ', '', $this->requestHeader[0]["Authorization"]);
         $username = $this->functions->verifyToken($token);
 
         try {
@@ -36,25 +40,25 @@ class TestController
                         if ($testName && $questionCount) {
                             $test = $this->db->query("INSERT INTO tests (test_name, question_count) VALUES (?, ?)", [$testName, $questionCount]);
                             if ($test->rowCount() > 0) {
-                                $this->functions->response($_POST, 200, MESSAGE_SUCCESS_TEST_ADDED, null, true);
+                                $this->functions->response($_POST, 200, $this->lang->getMessage('MESSAGE_SUCCESS_TEST_ADDED'), null, true);
                             } else {
-                                $this->functions->response(null, 403, null, ERR_FILL_REQUIRED_FIELDS, false);
+                                $this->functions->response(null, 403, null, $this->lang->getMessage('ERR_FILL_REQUIRED_FIELDS'), false);
                             }
                         } else {
-                            $this->functions->response(null, 402, null, ERR_FILL_REQUIRED_FIELDS, false);
+                            $this->functions->response(null, 402, null, $this->lang->getMessage('ERR_FILL_REQUIRED_FIELDS'), false);
                         }
                     }
                 } else {
-                    $this->functions->response(null, 401, null, ERR_UNAUTHORIZED_ACCESS, false);
+                    $this->functions->response(null, 401, null, $this->lang->getMessage('ERR_UNAUTHORIZED_ACCESS'), false);
                 }
                 $this->pdo->commit();
             } else {
-                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
+                $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
             }
         } catch (Exception $error) {
             $this->pdo->rollBack();
             die("Exception: " . $error->getMessage());
-            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
+            $this->functions->response(null, 500, null,  $this->lang->getMessage('ERR_SERVER_ERROR'), false);
         }
     }
 }

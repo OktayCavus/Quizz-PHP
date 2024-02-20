@@ -4,8 +4,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\KEY;
 
 require_once "../../includes/functions.php";
-require_once "../../includes/constant.php";
-
+require_once '../../languages/language.php';
 require_once "../../config/baglanti.php";
 require_once __DIR__ . "/../../vendor/autoload.php";
 
@@ -13,11 +12,17 @@ class AuthenticationHandler
 {
     private $functions;
     private $db;
+    private $lang;
+    private $languageHeader;
+    private $selectedLang;
 
     public function __construct($functions, $db)
     {
         $this->functions = $functions;
         $this->db = $db;
+        $this->languageHeader = apache_request_headers();
+        $this->selectedLang = $this->languageHeader['Accept-Language'];
+        $this->lang = new Language($this->selectedLang);
     }
 
     public function handleAuthentication()
@@ -26,7 +31,7 @@ class AuthenticationHandler
 
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                $this->functions->response(null, 406, null, ERR_INVALID_REQUEST_METHOD, false);
+                $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
                 exit;
             }
 
@@ -34,7 +39,7 @@ class AuthenticationHandler
             $password = $this->functions->safeOrNotControl($_POST, "password");
 
             if (!$username || !$password) {
-                $this->functions->response(null, 400, null, ERR_EMPTY_USERNAME_OR_PASSWORD, false);
+                $this->functions->response(null, 400, null, $this->lang->getMessage('ERR_EMPTY_USERNAME_OR_PASSWORD'), false);
                 exit;
             }
 
@@ -74,21 +79,24 @@ class AuthenticationHandler
 
                 $headers = [
                     'Authorization: Bearer ' .  $_SESSION["accessToken"],
-                    'Content-Type: application/json'
+                    'Content-Type: application/json',
+                    'Accept-Language: ' . $this->selectedLang
                 ];
                 foreach ($headers as $header) {
                     header($header);
                 }
+
+
                 $user["accessToken"] = $_SESSION["accessToken"];
-                $this->functions->response($user, 200, MESSAGE_SUCCESS_LOGIN, null, true);
+                $this->functions->response($user, 200, $this->lang->getMessage('MESSAGE_SUCCESS_LOGIN'), null, true);
             } else {
-                $this->functions->response(null, 400, null, ERR_INCORRECT_USERNAME_OR_PASSWORD, false);
+                $this->functions->response(null, 400, null, $this->lang->getMessage('ERR_INCORRECT_USERNAME_OR_PASSWORD'), false);
             }
             $this->db->commit();
         } catch (Exception $e) {
             echo ("Exception: " . $e->getMessage());
             $this->db->rollBack();
-            $this->functions->response(null, 500, null, ERR_SERVER_ERROR, false);
+            $this->functions->response(null, 500, null, $this->lang->getMessage('ERR_SERVER_ERROR'), false);
         }
     }
 }
