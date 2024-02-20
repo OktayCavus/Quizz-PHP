@@ -42,20 +42,20 @@ class PasswordReset
 
                         if ($updatePassword->rowCount() > 0) {
                             $this->pdo->commit();
-                            $this->functions->response($_POST, 200, $this->lang->getMessage('MESSAGE_PASSWORD_CHANGE_SUCCESSFUL'), null, true);
+                            $this->functions->response($_POST, 200, 'MESSAGE_PASSWORD_CHANGE_SUCCESSFUL', null, true);
                         }
                     } else {
-                        $this->functions->response(null, 404, null, $this->lang->getMessage('ERR_USER_NOT_FOUND'), false);
+                        $this->functions->response(null, 404, null, 'ERR_USER_NOT_FOUND', false);
                     }
                 } else {
-                    $this->functions->response(null, 402, null,  $this->lang->getMessage('ERR_FILL_REQUIRED_FIELDS'), false);
+                    $this->functions->response(null, 402, null,  'ERR_FILL_REQUIRED_FIELDS', false);
                 }
             } else {
-                $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
+                $this->functions->response(null, 406, null, 'ERR_INVALID_REQUEST_METHOD', false);
             }
         } catch (Exception $error) {
             $this->pdo->rollBack();
-            $this->functions->response(null, 500, null, $this->lang->getMessage('ERR_SERVER_ERROR'), false);
+            $this->functions->response(null, 500, null, 'ERR_SERVER_ERROR', false);
             echo ("Exception: " . $error->getMessage());
         }
     }

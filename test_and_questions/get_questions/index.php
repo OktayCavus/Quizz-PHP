@@ -26,7 +26,7 @@ class QuestionGetter
     {
         try {
             if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-                $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
+                $this->functions->response(null, 406, null, 'ERR_INVALID_REQUEST_METHOD', false);
             } else {
                 $this->pdo->beginTransaction();
                 if ($this->requestHeader == null || !isset($this->requestHeader[0]["Authorization"])) {
@@ -38,7 +38,7 @@ class QuestionGetter
                     if ($this->functions->check("QSTN", 6)) {
                         $testID = $this->functions->safeOrNotControl($_GET, 'testID');
                         if (!$testID) {
-                            $this->functions->response(null, 402, null, $this->lang->getMessage('ERR_FILL_REQUIRED_FIELDS'), false);
+                            $this->functions->response(null, 402, null, 'ERR_FILL_REQUIRED_FIELDS', false);
                             exit;
                         }
                         $questions = $this->db->query("
@@ -106,18 +106,18 @@ class QuestionGetter
                             $responseContent = array(
                                 'questions' => array_values($allQuestions)
                             );
-                            $this->functions->response($responseContent, 200, $this->lang->getMessage('MESSAGE_SUCCESS_QUESTION_LISTING'), null, true);
+                            $this->functions->response($responseContent, 200, 'MESSAGE_SUCCESS_QUESTION_LISTING', null, true);
                         } else {
-                            $this->functions->response(null, 402, null, $this->lang->getMessage('ERR_QUESTION_LISTING_FAILED'), false);
+                            $this->functions->response(null, 402, null, 'ERR_QUESTION_LISTING_FAILED', false);
                             exit;
                         }
                     }
                 } else {
-                    $this->functions->response(null, 401, null, $this->lang->getMessage('ERR_UNAUTHORIZED_ACCESS'), false);
+                    $this->functions->response(null, 401, null, 'ERR_UNAUTHORIZED_ACCESS', false);
                 }
             }
         } catch (Exception $e) {
-            $this->functions->response(null, 500, null, $this->lang->getMessage('ERR_SERVER_ERROR'), false);
+            $this->functions->response(null, 500, null, 'ERR_SERVER_ERROR', false);
             $this->pdo->rollBack();
             die($e->getMessage());
         }

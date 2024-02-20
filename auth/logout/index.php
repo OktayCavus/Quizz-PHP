@@ -35,8 +35,7 @@ class LogoutHandler
 
     private function respondLogoutSuccess()
     {
-        $message = $this->lang->getMessage('MESSAGE_LOGOUT_SUCCESSFUL');
-        $this->functions->response(null, 200, $message, null, true);
+        $this->functions->response(null, 200, 'MESSAGE_LOGOUT_SUCCESSFUL', null, true);
     }
 }
 

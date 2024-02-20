@@ -28,7 +28,7 @@ class QuestionRemover
     {
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
-                $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
+                $this->functions->response(null, 406, null, 'ERR_INVALID_REQUEST_METHOD', false);
             } else {
                 $this->pdo->beginTransaction();
 
@@ -50,24 +50,24 @@ class QuestionRemover
                             if ($removeOptions->rowCount() > 0) {
                                 $removeQuestion = $this->db->query("DELETE FROM questions where question_id = ?", [$question]);
                                 if ($removeQuestion->rowCount() > 0) {
-                                    $this->functions->response($_GET, 200, $this->lang->getMessage('MESSAGE_SUCCESS_QUESTION_DELETE'), null, true);
+                                    $this->functions->response($_GET, 200, 'MESSAGE_SUCCESS_QUESTION_DELETE', null, true);
                                 } else {
-                                    $this->functions->response(null, 405, null, $this->lang->getMessage('ERR_QUESTION_DELETE_FAILED_Q'), false);
+                                    $this->functions->response(null, 405, null, 'ERR_QUESTION_DELETE_FAILED_Q', false);
                                 }
                             } else {
-                                $this->functions->response(null, 405, null, $this->lang->getMessage('ERR_QUESTION_DELETE_FAILED_A'), false);
+                                $this->functions->response(null, 405, null, 'ERR_QUESTION_DELETE_FAILED_A', false);
                             }
                         }
                     }
                 } else {
-                    $this->functions->response(null, 401, null, $this->lang->getMessage('ERR_UNAUTHORIZED_ACCESS'), false);
+                    $this->functions->response(null, 401, null, 'ERR_UNAUTHORIZED_ACCESS', false);
                 }
                 $this->pdo->commit();
             }
         } catch (Exception $error) {
             $this->pdo->rollBack();
             die("Exception: " . $error->getMessage());
-            $this->functions->response(null, 500, null, $this->lang->getMessage('ERR_SERVER_ERROR'), false);
+            $this->functions->response(null, 500, null, 'ERR_SERVER_ERROR', false);
         }
     }
 }

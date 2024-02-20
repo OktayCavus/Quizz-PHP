@@ -31,7 +31,7 @@ class AuthenticationHandler
 
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                $this->functions->response(null, 406, null, $this->lang->getMessage('ERR_INVALID_REQUEST_METHOD'), false);
+                $this->functions->response(null, 406, null, 'ERR_INVALID_REQUEST_METHOD', false);
                 exit;
             }
 
@@ -39,7 +39,7 @@ class AuthenticationHandler
             $password = $this->functions->safeOrNotControl($_POST, "password");
 
             if (!$username || !$password) {
-                $this->functions->response(null, 400, null, $this->lang->getMessage('ERR_EMPTY_USERNAME_OR_PASSWORD'), false);
+                $this->functions->response(null, 400, null, 'ERR_EMPTY_USERNAME_OR_PASSWORD', false);
                 exit;
             }
 
@@ -88,15 +88,15 @@ class AuthenticationHandler
 
 
                 $user["accessToken"] = $_SESSION["accessToken"];
-                $this->functions->response($user, 200, $this->lang->getMessage('MESSAGE_SUCCESS_LOGIN'), null, true);
+                $this->functions->response($user, 200, 'MESSAGE_SUCCESS_LOGIN', null, true);
             } else {
-                $this->functions->response(null, 400, null, $this->lang->getMessage('ERR_INCORRECT_USERNAME_OR_PASSWORD'), false);
+                $this->functions->response(null, 400, null, 'ERR_INCORRECT_USERNAME_OR_PASSWORD', false);
             }
             $this->db->commit();
         } catch (Exception $e) {
             echo ("Exception: " . $e->getMessage());
             $this->db->rollBack();
-            $this->functions->response(null, 500, null, $this->lang->getMessage('ERR_SERVER_ERROR'), false);
+            $this->functions->response(null, 500, null, 'ERR_SERVER_ERROR', false);
         }
     }
 }

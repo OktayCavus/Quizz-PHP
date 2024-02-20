@@ -44,7 +44,7 @@ class Language
         if (isset($this->lang[$key])) {
             return $this->lang[$key];
         } else {
-            return "Hata mesajı bulunamadı: $key";
+            return "Hata mesajı bulunamadı";
         }
     }
 }
