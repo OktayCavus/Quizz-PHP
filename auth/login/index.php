@@ -4,25 +4,28 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\KEY;
 
 require_once "../../includes/functions.php";
+require_once "../../includes/base_controller.php";
+
 require_once '../../languages/language.php';
 require_once "../../config/baglanti.php";
 require_once __DIR__ . "/../../vendor/autoload.php";
 
-class AuthenticationHandler
+class AuthenticationHandler extends BaseController
 {
-    private $functions;
-    private $db;
-    private $lang;
-    private $languageHeader;
-    private $selectedLang;
+    // private $functions;
+    // private $db;
+    // private $lang;
+    // private $languageHeader;
+    // private $selectedLang;
 
     public function __construct($functions, $db)
     {
-        $this->functions = $functions;
-        $this->db = $db;
-        $this->languageHeader = apache_request_headers();
-        $this->selectedLang = $this->languageHeader['Accept-Language'];
-        $this->lang = new Language($this->selectedLang);
+        // $this->functions = $functions;
+        // $this->db = $db;
+        // $this->languageHeader = apache_request_headers();
+        // $this->selectedLang = $this->languageHeader['Accept-Language'];
+        // $this->lang = new Language($this->selectedLang);
+        parent::__construct(false);
     }
 
     public function handleAuthentication()

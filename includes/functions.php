@@ -2,7 +2,6 @@
 session_start();
 
 use Firebase\JWT\JWT;
-// ! bu da decode için
 use Firebase\JWT\Key;
 
 class Functions
@@ -51,10 +50,10 @@ class Functions
         }
     }
 
-    function headerRequest()
+    function headerRequest(?bool $isHasSession)
     {
         $requestHeader = apache_request_headers();
-        if (!isset($requestHeader["Authorization"])) {
+        if (!isset($requestHeader["Authorization"]) && $isHasSession) {
             $this->response(null, 401, null, 'ERR_MISSING_AUTHORIZATION_HEADER', false);
             return;
         }

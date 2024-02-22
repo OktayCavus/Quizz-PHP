@@ -1,27 +1,29 @@
 <?php
 
-require_once('../../config/baglanti.php');
+require_once '../../config/baglanti.php';
 require_once "../../includes/functions.php";
+require_once "../../includes/base_controller.php";
 
 require_once '../../languages/language.php';
 
 
-class PasswordReset
+class PasswordReset extends BaseController
 {
-    private $db;
-    private $pdo;
-    private $functions;
-    private $lang;
-    private $languageHeader;
-    private $selectedLang;
+    // private $db;
+    // private $pdo;
+    // private $functions;
+    // private $lang;
+    // private $languageHeader;
+    // private $selectedLang;
     public function __construct()
     {
-        $this->db = new Database();
-        $this->pdo = $this->db->getPdo();
-        $this->functions = new Functions();
-        $this->languageHeader = apache_request_headers();
-        $this->selectedLang = $this->languageHeader['Accept-Language'];
-        $this->lang = new Language($this->selectedLang);
+        parent::__construct(false);
+        // $this->db = new Database();
+        // $this->pdo = $this->db->getPdo();
+        // $this->functions = new Functions();
+        // $this->languageHeader = apache_request_headers();
+        // $this->selectedLang = $this->languageHeader['Accept-Language'];
+        // $this->lang = new Language($this->selectedLang);
     }
 
     public function resetPassword()

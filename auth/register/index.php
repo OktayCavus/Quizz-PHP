@@ -2,27 +2,29 @@
 
 require_once('../../config/baglanti.php');
 require_once "../../includes/functions.php";
+require_once "../../includes/base_controller.php";
 
 require_once '../../languages/language.php';
 
 
-class UserRegistration
+class UserRegistration extends BaseController
 {
-    private $functions;
-    private $db;
+    // private $functions;
+    // private $db;
     private $defaultRoleID;
-    private $lang;
-    private $languageHeader;
-    private $selectedLang;
+    // private $lang;
+    // private $languageHeader;
+    // private $selectedLang;
     public function __construct($functions, $db)
     {
-        $this->functions = $functions;
-        $this->db = $db;
+        // $this->functions = $functions;
+        // $this->db = $db;
+        parent::__construct(false);
         $this->defaultRoleID = 2;
-
-        $this->languageHeader = apache_request_headers();
-        $this->selectedLang = $this->languageHeader['Accept-Language'];
-        $this->lang = new Language($this->selectedLang);
+        // $this->languageHeader = apache_request_headers();
+        // print_r($this->languageHeader);
+        // $this->selectedLang = $this->languageHeader['Accept-Language'];
+        // $this->lang = new Language($this->selectedLang);
     }
 
     public function registerUser()
@@ -33,7 +35,6 @@ class UserRegistration
             $islem = array();
             $username = $this->functions->safeOrNotControl($_POST, 'username');
             $password = $this->functions->safeOrNotControl($_POST, 'password');
-            // $role_id = $this->functions->safeOrNotControl($_POST, 'role_id');
             $role_id = $this->defaultRoleID;
             $firstname = $this->functions->safeOrNotControl($_POST, 'firstname');
             $lastname = $this->functions->safeOrNotControl($_POST, 'lastname');

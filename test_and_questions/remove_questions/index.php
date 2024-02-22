@@ -1,27 +1,15 @@
 <?php
 
 require_once '../../config/baglanti.php';
-
+require_once '../../includes/base_controller.php';
 require_once '../../includes/functions.php';
 require_once '../../languages/language.php';
 
-class QuestionRemover
+class QuestionRemover extends BaseController
 {
-    private $db;
-    private $functions;
-    private $pdo;
-    private $lang;
-    private $requestHeader;
-
     public function __construct()
     {
-        $this->db = new Database();
-        $this->functions = new Functions();
-        $this->pdo = $this->db->getPdo();
-        $this->lang = new Language('tr');
-        $this->requestHeader = $this->functions->headerRequest();
-        $selectedLang = $this->requestHeader[0]['Accept-Language'];
-        $this->lang = new Language($selectedLang);
+        parent::__construct();
     }
 
     public function removeQuestion()
@@ -37,30 +25,33 @@ class QuestionRemover
                 }
                 $token = str_replace('Bearer ', '', $this->requestHeader[0]["Authorization"]);
                 $username = $this->functions->verifyToken($token);
+                if (isset($_SESSION["user"])) {
+                    if ($username == $_SESSION["user"]["username"]) {
 
-                if ($username == $_SESSION["user"]["username"]) {
-
-                    if ($this->functions->check("QSTN", 5)) {
-                        $questionID = $this->functions->safeOrNotControl($_GET, "questionID");
-                        if (is_string($questionID)) {
-                            $questionIDs = explode(',', $questionID);
-                        }
-                        foreach ($questionIDs as $question) {
-                            $removeOptions = $this->db->query("DELETE FROM options WHERE question_id = ?", [$question]);
-                            if ($removeOptions->rowCount() > 0) {
-                                $removeQuestion = $this->db->query("DELETE FROM questions where question_id = ?", [$question]);
-                                if ($removeQuestion->rowCount() > 0) {
-                                    $this->functions->response($_GET, 200, 'MESSAGE_SUCCESS_QUESTION_DELETE', null, true);
+                        if ($this->functions->check("QSTN", 5)) {
+                            $questionID = $this->functions->safeOrNotControl($_GET, "questionID");
+                            if (is_string($questionID)) {
+                                $questionIDs = explode(',', $questionID);
+                            }
+                            foreach ($questionIDs as $question) {
+                                $removeOptions = $this->db->query("DELETE FROM options WHERE question_id = ?", [$question]);
+                                if ($removeOptions->rowCount() > 0) {
+                                    $removeQuestion = $this->db->query("DELETE FROM questions where question_id = ?", [$question]);
+                                    if ($removeQuestion->rowCount() > 0) {
+                                        $this->functions->response($_GET, 200, 'MESSAGE_SUCCESS_QUESTION_DELETE', null, true);
+                                    } else {
+                                        $this->functions->response(null, 405, null, 'ERR_QUESTION_DELETE_FAILED_Q', false);
+                                    }
                                 } else {
-                                    $this->functions->response(null, 405, null, 'ERR_QUESTION_DELETE_FAILED_Q', false);
+                                    $this->functions->response(null, 405, null, 'ERR_QUESTION_DELETE_FAILED_A', false);
                                 }
-                            } else {
-                                $this->functions->response(null, 405, null, 'ERR_QUESTION_DELETE_FAILED_A', false);
                             }
                         }
+                    } else {
+                        $this->functions->response(null, 401, null, 'ERR_UNAUTHORIZED_ACCESS', false);
                     }
                 } else {
-                    $this->functions->response(null, 401, null, 'ERR_UNAUTHORIZED_ACCESS', false);
+                    $this->functions->response(null, 408, null, 'ERR_SESSION_NOT_STARTED', false);
                 }
                 $this->pdo->commit();
             }
