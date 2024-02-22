@@ -22,15 +22,15 @@ class Language
 
     private function loadLanguageFile($lang)
     {
-        $language_file = __DIR__ . "/{$lang}/languages_{$lang}.php";
-
+        $language_file = __DIR__ . "/{$lang}/languages_{$lang}.json";
         if (file_exists($language_file)) {
-            $langContent = include($language_file);
+            $langContent = file_get_contents($language_file);
+            $langContent = json_decode($langContent, true);
 
-            if (is_array($langContent)) {
+            if ($langContent !== null) {
                 $this->lang = $langContent;
             } else {
-                echo "Hata: Dil dosyası bir dizi içermelidir.";
+                echo "Hata: Dil dosyası geçersiz JSON formatına sahip.";
                 exit;
             }
         } else {
